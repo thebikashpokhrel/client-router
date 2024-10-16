@@ -1,37 +1,30 @@
-/* Reset some default styles */
 body {
-  margin: 0;
   font-family: Arial, sans-serif;
-}
-
-.navbar {
-  background-color: #333;
-  padding: 10px 20px;
-}
-
-.navbar-menu {
-  list-style-type: none;
-  padding: 0;
   margin: 0;
-  display: flex;
+  padding: 0;
+  background-color: #f4f4f4;
 }
 
-.navbar-menu li {
-  margin-right: 20px;
-}
-
-.navbar-menu li a {
+header {
+  background-color: #333;
   color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  color: white;
+  margin: 0 10px;
   text-decoration: none;
-  padding: 10px 15px;
-  transition: background-color 0.3s;
-  border-radius: 5px;
 }
 
-.navbar-menu li a:hover {
-  background-color: #555;
+main {
+  padding: 20px;
 }
 
-#root {
-  padding: 10px;
+.loader {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 18px;
+  font-weight: bold;
 }
