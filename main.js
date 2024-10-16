@@ -1,4 +1,3 @@
-import { template } from "handlebars";
 import { Router } from "./src/router";
 import Country from "./templates/Country.hbs";
 import Users from "./templates/Users.hbs";

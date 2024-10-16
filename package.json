@@ -1,5 +1,5 @@
 {
-  "name": "client-side-router",
+  "name": "client-router",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,10 +9,14 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^5.4.8",
-    "vite-plugin-handlebars": "^2.0.0"
+    "vite": "^5.4.8"
   },
   "dependencies": {
     "handlebars": "^4.7.8"
-  }
+  },
+  "description": "A lightweight client-side router for single-page applications (SPA) that enables dynamic navigation between pages without reloading the browser.",
+  "main": "main.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

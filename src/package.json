@@ -1,0 +1,19 @@
+{
+  "name": "client-router-js",
+  "version": "1.0.0",
+  "description": "A lightweight client-side router for single-page applications (SPA)",
+  "main": "router.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thebikashpokhrel/client-side-router.git"
+  },
+  "author": "Bikash Pokhrel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thebikashpokhrel/client-side-router/issues"
+  },
+  "homepage": "https://github.com/thebikashpokhrel/client-side-router#readme"
+}
