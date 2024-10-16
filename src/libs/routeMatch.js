@@ -1,4 +1,13 @@
 // Match the current path to the routes and extract any URL params
+
+export const registerTags = (routes, routeTags) => {
+  routes.forEach((route) => {
+    if (route.config?.tag) {
+      routeTags[route.path] = route.config.tag;
+    }
+  });
+};
+
 export const matchRoute = (routes, fullPath) => {
   let matchedRoute = null;
   let regexMatch = null;

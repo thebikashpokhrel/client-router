@@ -3,12 +3,20 @@ import {
   getPathname,
   registerRouter,
   resolveDynamicString,
+  resolveTemplate,
 } from "./libs/utils";
-import { matchRoute, extractParams } from "./libs/routeMatch";
-import { execAsyncLoader } from "./libs/execAsyncLoader";
+import { matchRoute, extractParams, registerTags } from "./libs/routeMatch";
+import { execAsyncContent, execAsyncLoader } from "./libs/execAsync";
 
 // Main Router Function
 export const Router = (root, routes) => {
+  const routeTags = {};
+
+  registerTags(routes, routeTags); //Register route Tags used for cache invalidation logic
+
+  const invalidateCache = (tagName, type) =>
+    cache.invalidate(routeTags[tagName], type);
+
   // Handle route changes
   const handleRoutes = async () => {
     const fullPath = getPathname();
@@ -24,12 +32,16 @@ export const Router = (root, routes) => {
     // If a route is matched
     if (route) {
       matchedRoute.config = route.config || {};
+      matchedRoute.loader = route.loader || undefined;
+      matchedRoute.title = route.title || undefined;
+      matchedRoute.content = route.content || undefined;
+
       matchedRoute.params = extractParams(route.path, regexMatch);
 
       const fnArgs = { params: matchedRoute.params };
 
       // Load data via the loader function
-      await execAsyncLoader(route, matchedRoute, fnArgs, cache);
+      await execAsyncLoader(matchedRoute, fnArgs, cache);
       fnArgs.data = matchedRoute.data;
 
       // Handle title and content
@@ -39,16 +51,17 @@ export const Router = (root, routes) => {
         matchedRoute.title = route.title(fnArgs);
       }
 
-      if (typeof route.content == "string") {
-        matchedRoute.content = resolveDynamicString(route.content, fnArgs);
-      } else if (typeof route.content == "function") {
-        matchedRoute.content = route.content(fnArgs);
-      }
-    }
-    // Update DOM content and title
-    root.innerHTML = matchedRoute.content || "404 Error - Page not found";
-    document.title = matchedRoute.title || "Page not found";
+      // Load the content
+      await execAsyncContent(matchedRoute, fnArgs, cache);
 
+      // Update DOM content and title
+      root.innerHTML = matchedRoute.content;
+      document.title = matchedRoute.title;
+    } else {
+      // Update DOM content and title
+      root.innerHTML = "404 Error - Page not found";
+      document.title = "Page not found";
+    }
     // Re-attach event listeners for links
     registerRouter();
   };
@@ -69,6 +82,6 @@ export const Router = (root, routes) => {
 
   return {
     currentRoute: getPathname(),
-    invalidateCache: cache.invalidate,
+    invalidateCache,
   };
 };

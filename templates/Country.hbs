@@ -1,0 +1,7 @@
+{{#with data.country}}
+  <h2>{{name.common}}</h2>
+  <p>Capital: {{capital}}</p>
+  <p>Region: {{region}}</p>
+  <p>Population: {{formatPopulation population}}</p>
+  <img src="{{flags.svg}}" alt="Flag of {{name.common}}" width="200" />
+{{/with}}

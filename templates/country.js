@@ -1,6 +1,6 @@
 export const Country = (country) => {
   return `
-    h2>${country.name.common}</h2>
+    <h2>${country.name.common}</h2>
       <p>Capital: ${country.capital}</p>
       <p>Region: ${country.region}</p>
       <p>Population: ${country.population.toLocaleString()}</p>

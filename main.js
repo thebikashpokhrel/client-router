@@ -1,5 +1,24 @@
+import { template } from "handlebars";
 import { Router } from "./src/router";
-import { Country } from "./components/country";
+import Country from "./templates/Country.hbs";
+import Users from "./templates/Users.hbs";
+
+const getUsers = async () => {
+  const url = `https://api.freeapi.app/api/v1/public/randomusers?page=${Math.floor(
+    Math.random() * 10
+  )}&limit=4`;
+  const options = { method: "GET", headers: { accept: "application/json" } };
+
+  try {
+    const response = await fetch(url, options);
+    const json = await response.json();
+    return {
+      users: json.data.data,
+    };
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 const routes = [
   {
@@ -27,10 +46,22 @@ const routes = [
         };
       }
     },
-    content: ({ params, data: { country } }) => {
-      return Country(country);
-    },
+    content: Country,
     config: {
+      loader_cache: true,
+      content_cache: true,
+      template: true,
+      tag: "country",
+    },
+  },
+  {
+    path: "/users",
+    title: "Random Users",
+    loader: getUsers,
+    content: Users,
+    config: {
+      template: true,
+      content_cache: true,
       loader_cache: true,
     },
   },
@@ -38,5 +69,5 @@ const routes = [
 
 document.addEventListener("DOMContentLoaded", () => {
   const root = document.getElementById("root");
-  Router(root, routes);
+  const router = Router(root, routes);
 });
