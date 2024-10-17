@@ -1,6 +1,6 @@
 {
   "name": "client-router-js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A lightweight client-side router for single-page applications (SPA)",
   "main": "router.js",
   "scripts": {

@@ -3,7 +3,7 @@
 export const registerTags = (routes, routeTags) => {
   routes.forEach((route) => {
     if (route.config?.tag) {
-      routeTags[route.path] = route.config.tag;
+      routeTags[route.config.tag] = route.path;
     }
   });
 };

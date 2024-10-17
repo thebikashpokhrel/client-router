@@ -1,4 +1,5 @@
 import { resolveDynamicString, resolveTemplate } from "./utils";
+import Handlebars from "handlebars";
 // Execute route loader and handle caching
 export const execAsyncLoader = async (matchedRoute, fnArgs, cache) => {
   let cachedData = null;
@@ -33,6 +34,7 @@ export const execAsyncLoader = async (matchedRoute, fnArgs, cache) => {
 export const execAsyncContent = async (matchedRoute, fnArgs, cache) => {
   let cachedContent = null; //Cache data
   let cacheResult = false; //Whether to cache new data or not
+  let compiledTemplate = null;
   // Caching logic
   if (matchedRoute.config?.content_cache) {
     cachedContent = cache.get(matchedRoute.path, "CONTENT");
@@ -40,8 +42,14 @@ export const execAsyncContent = async (matchedRoute, fnArgs, cache) => {
   }
 
   if (cachedContent) {
-    console.log("cache hit");
-    matchedRoute.content = cachedContent;
+    if (matchedRoute.config?.template) {
+      matchedRoute.content = cachedContent({
+        data: fnArgs.data,
+        params: fnArgs.params,
+      });
+    } else {
+      matchedRoute.content = cachedContent;
+    }
     return;
   } else {
     if (
@@ -52,16 +60,18 @@ export const execAsyncContent = async (matchedRoute, fnArgs, cache) => {
     } else if (typeof matchedRoute.content == "function") {
       matchedRoute.content = matchedRoute.content(fnArgs);
     } else if (matchedRoute.config?.template) {
-      matchedRoute.content = await resolveTemplate(
-        matchedRoute.content,
-        fnArgs
-      );
+      compiledTemplate = await resolveTemplate(matchedRoute.content, fnArgs);
+
+      matchedRoute.content = compiledTemplate({
+        data: fnArgs.data,
+        params: fnArgs.params,
+      });
     }
     if (cacheResult) {
       cache.add(
         {
           path: matchedRoute.path,
-          entry: matchedRoute.content,
+          entry: compiledTemplate || matchedRoute.content,
         },
         "CONTENT"
       );

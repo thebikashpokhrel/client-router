@@ -3,7 +3,6 @@ import {
   getPathname,
   registerRouter,
   resolveDynamicString,
-  resolveTemplate,
 } from "./libs/utils";
 import { matchRoute, extractParams, registerTags } from "./libs/routeMatch";
 import { execAsyncContent, execAsyncLoader } from "./libs/execAsync";
@@ -14,8 +13,14 @@ export const Router = (root, routes) => {
 
   registerTags(routes, routeTags); //Register route Tags used for cache invalidation logic
 
-  const invalidateCache = (tagName, type) =>
+  const invalidateCache = (tagName, type) => {
     cache.invalidate(routeTags[tagName], type);
+  };
+
+  const navigate = async (url) => {
+    const stateObject = {};
+    history.pushState(stateObject, "", url);
+  };
 
   // Handle route changes
   const handleRoutes = async () => {
@@ -35,10 +40,24 @@ export const Router = (root, routes) => {
       matchedRoute.loader = route.loader || undefined;
       matchedRoute.title = route.title || undefined;
       matchedRoute.content = route.content || undefined;
+      matchedRoute.callback = route.callback || undefined;
 
       matchedRoute.params = extractParams(route.path, regexMatch);
 
-      const fnArgs = { params: matchedRoute.params };
+      const fnArgs = {
+        params: matchedRoute.params,
+        router: {
+          navigate,
+          getPathname,
+          reload: (invalidate) => {
+            if (invalidate) {
+              invalidateCache(matchedRoute.config?.tag, "LOADER");
+            }
+            navigate(getPathname());
+          },
+          invalidateCache: invalidateCache,
+        },
+      };
 
       // Load data via the loader function
       await execAsyncLoader(matchedRoute, fnArgs, cache);
@@ -55,8 +74,15 @@ export const Router = (root, routes) => {
       await execAsyncContent(matchedRoute, fnArgs, cache);
 
       // Update DOM content and title
+      //Wrap inside template tag to give its reference in callback function
+      matchedRoute.content = `<RouteContent>${matchedRoute.content}</RouteContent>`;
       root.innerHTML = matchedRoute.content;
       document.title = matchedRoute.title;
+
+      const parent = root.getElementsByTagName("RouteContent")[0];
+      //Execute the callback function
+      if (typeof matchedRoute.callback == "function")
+        matchedRoute.callback({ parent, ...fnArgs });
     } else {
       // Update DOM content and title
       root.innerHTML = "404 Error - Page not found";
@@ -72,7 +98,6 @@ export const Router = (root, routes) => {
     originalPushState.apply(this, args);
     await handleRoutes();
   };
-
   // Listen for popstate (back/forward navigation)
   window.addEventListener("popstate", handleRoutes);
 
@@ -83,5 +108,6 @@ export const Router = (root, routes) => {
   return {
     currentRoute: getPathname(),
     invalidateCache,
+    navigate,
   };
 };

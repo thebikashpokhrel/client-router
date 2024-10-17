@@ -23,6 +23,17 @@ A lightweight client-side router for single-page applications (SPA) that enables
    ```bash
    npm install client-router-js handlebars
    ```
+3. Configure vite for static import of templates
+
+   ```js
+   //vite.config.js
+
+   import { defineConfig } from "vite";
+
+   export default defineConfig({
+     assetsInclude: ["**/*.hbs"],
+   });
+   ```
 
 ## Usage
 
@@ -156,6 +167,7 @@ Each route in the router is defined as an object with the following properties:
 - **`title`**: (string | function) The page title. This can either be a string or a function.
 - **`content`**: (string | function | template) The content to be rendered. It can be a string with dynamic placeholders, a JavaScript template literal, or a Handlebars template.
 - **`loader`**: (function) Asynchronous function to load data.
+- **`callback`**: (function) Function to execute once the route content has been loaded
 - **`config`**: (object) Configuration options for the route.
 
 ### Example:
@@ -263,6 +275,32 @@ const fetchUserData = async ({ params }) => {
 
 The object returned by the loader function is available in the `data` object when rendering the content.
 
+## Callback Functions
+
+Callback functions are functions that are executed after the route content is loaded.
+
+```js
+{
+  path: '/user/:id',
+  // ...
+  callback:({parent,params, data, router})=>{
+    //Function body
+  },
+  // ...
+}
+```
+
+`parent` is the HTMLElement wrapping route content of a that route. It is useful to scope event handlers or DOM query within that route.
+
+## `router` Object
+
+`router` object is accessible inside `loader` and `callback` functions. It includes the following:
+
+- `getPathname()`: Get current route path
+- `invalidateCache(tag,TYPE)`: Invalidate the cache based on tag
+- `navigate(path)`: Redirect to given path
+- `reload(clear_cache)`: Reload the current path. Take `clear_cache` as optional argument which is a boolean value(default value is false) that determines whether to clear the cache or not
+
 ## Caching
 
 The router supports caching for both loader data and rendered content, which improves performance by avoiding redundant data fetching or content re-rendering.
@@ -281,7 +319,7 @@ The router supports caching for both loader data and rendered content, which imp
   ```
 
 - ### Content Caching
-  Similarly, content caching can be enabled using the content_cache option. The content will be cached after the first render, preventing re-renders for the same route.
+  Similarly, content caching can be enabled using the content_cache option. The content will be cached after the first render, preventing re-renders for the same route. If you are using HandleBars template then the precompiled template is cached.
   ```js
   {
     //other options
@@ -310,6 +348,19 @@ The router allows cache invalidation based on the tags specified in the route's 
 }
 
 router.invalidateCache('user-profile', 'LOADER'); //Invalidate loader's cache
+```
+
+The `invalidateCache` method can be accessed from the object returned by `Router()` function or it is accessible via the `router` object inside `loader` and `callback`.
+
+```js
+{
+  //Other route options
+  callback: ({ params, data, router }) => {
+    router.invalidateCache("tag_name", "LOADER");
+  };
+}
+
+//Invalidate loader's cache
 ```
 
 ## Config Options

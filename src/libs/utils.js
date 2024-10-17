@@ -46,12 +46,12 @@ export const resolveTemplate = async (templatePath, args) => {
 
     // Compile the Handlebars template
     const compiledTemplate = Handlebars.compile(templateText);
-    const renderedHtml = compiledTemplate({
-      params: args.params,
-      data: args.data,
-    });
+    // const renderedHtml = compiledTemplate({
+    //   params: args.params,
+    //   data: args.data,
+    // });
 
-    return renderedHtml;
+    return compiledTemplate;
   } catch (error) {
     console.error(`Error resolving template: ${error}`);
     return `<p>Error loading template</p>`;
