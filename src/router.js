@@ -10,7 +10,7 @@ import { execAsyncContent, execAsyncLoader } from "./libs/execAsync";
 // Main Router Function
 export const Router = (root, routes) => {
   const routeTags = {};
-
+  const events = {};
   registerTags(routes, routeTags); //Register route Tags used for cache invalidation logic
 
   const invalidateCache = (tagName, type) => {
@@ -22,6 +22,7 @@ export const Router = (root, routes) => {
     history.pushState(stateObject, "", url);
   };
 
+  let currentPathTag = null;
   // Handle route changes
   const handleRoutes = async () => {
     const fullPath = getPathname();
@@ -32,6 +33,9 @@ export const Router = (root, routes) => {
       config: {},
     };
 
+    const states = {
+      retrievedFromCache: false,
+    }; //Track some internal details
     const { route, regexMatch } = matchRoute(routes, fullPath);
 
     // If a route is matched
@@ -43,10 +47,12 @@ export const Router = (root, routes) => {
       matchedRoute.callback = route.callback || undefined;
 
       matchedRoute.params = extractParams(route.path, regexMatch);
+      currentPathTag = route.config?.tag;
 
       const fnArgs = {
         params: matchedRoute.params,
         router: {
+          events: {},
           navigate,
           getPathname,
           reload: (invalidate) => {
@@ -56,6 +62,9 @@ export const Router = (root, routes) => {
             navigate(getPathname());
           },
           invalidateCache: invalidateCache,
+          registerEvents: (eventHandlers) => {
+            events[matchedRoute.config?.tag] = eventHandlers;
+          },
         },
       };
 
@@ -71,15 +80,15 @@ export const Router = (root, routes) => {
       }
 
       // Load the content
-      await execAsyncContent(matchedRoute, fnArgs, cache);
+      await execAsyncContent(matchedRoute, fnArgs, cache, states);
 
       // Update DOM content and title
       //Wrap inside template tag to give its reference in callback function
-      matchedRoute.content = `<RouteContent>${matchedRoute.content}</RouteContent>`;
-      root.innerHTML = matchedRoute.content;
+      root.innerHTML = "";
+      root.appendChild(matchedRoute.content);
       document.title = matchedRoute.title;
 
-      const parent = root.getElementsByTagName("RouteContent")[0];
+      const parent = matchedRoute.content;
       //Execute the callback function
       if (typeof matchedRoute.callback == "function")
         matchedRoute.callback({ parent, ...fnArgs });
@@ -88,6 +97,7 @@ export const Router = (root, routes) => {
       root.innerHTML = "404 Error - Page not found";
       document.title = "Page not found";
     }
+
     // Re-attach event listeners for links
     registerRouter();
   };
@@ -105,6 +115,10 @@ export const Router = (root, routes) => {
   registerRouter();
   handleRoutes(); // Call once on load
 
+  //Attach Event Handlers global function
+  window.RouterEvents = (eventName, ...args) => {
+    events[currentPathTag][eventName](...args);
+  };
   return {
     currentRoute: getPathname(),
     invalidateCache,

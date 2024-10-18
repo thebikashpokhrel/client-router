@@ -3,6 +3,7 @@
     <p>Name: {{this.name.first}} {{this.name.last}}</p>
     <p>Email: {{this.email}}</p>
     <p><a href="/user/{{this.name.first}}" data-type="navigate">View User</a></p>
+    <button onclick="RouterEvents('handleClick',{{json this}})">View User</button>
   {{/each}}
 {{/with}}
 

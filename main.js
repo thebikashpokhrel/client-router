@@ -5,8 +5,5 @@ import { UserRoute } from "./routes/user.route";
 import { CountryRoute } from "./routes/country.route";
 
 const routes = [HomeRoute, CountryRoute, UsersRoute, UserRoute];
-
-document.addEventListener("DOMContentLoaded", () => {
-  const root = document.getElementById("root");
-  const router = Router(root, routes);
-});
+const root = document.getElementById("root");
+const router = Router(root, routes);

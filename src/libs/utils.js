@@ -36,6 +36,20 @@ export const resolveTemplate = async (templatePath, args) => {
     return "N/A"; // Return a fallback value if population is not a number
   });
 
+  Handlebars.registerHelper("json", function (context) {
+    // Use JSON.stringify and handle any potential errors
+    try {
+      return JSON.stringify(context).replace(/"/g, "'"); // Replace quotes for safer attribute usage
+    } catch (e) {
+      console.error("Error stringifying object:", e);
+      return "{}"; // Return empty object in case of error
+    }
+  });
+
+  Handlebars.registerHelper("index", function (context, ndx) {
+    return context[ndx];
+  });
+
   try {
     // Fetch the template content from the provided file path (templatePath)
     const response = await fetch(templatePath);
@@ -45,7 +59,9 @@ export const resolveTemplate = async (templatePath, args) => {
     const templateText = await response.text();
 
     // Compile the Handlebars template
-    const compiledTemplate = Handlebars.compile(templateText);
+    const compiledTemplate = Handlebars.compile(
+      `<RouteContent>${templateText}</RouteContent>`
+    );
     // const renderedHtml = compiledTemplate({
     //   params: args.params,
     //   data: args.data,

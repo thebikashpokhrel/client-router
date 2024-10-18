@@ -22,13 +22,15 @@ export const UsersRoute = {
   title: "Random Users",
   loader: getUsers,
   content: Users,
-  callback: ({ parent, router }) => {
+  callback: ({ parent, router, data }) => {
+    console.log(data.users);
     const btns = parent.querySelectorAll(".userDetail");
-    btns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        router.reload(true);
-      });
-    });
+    const events = {
+      handleClick: (user) => {
+        console.log(user);
+      },
+    };
+    router.registerEvents(events);
   },
   config: {
     template: true,
